@@ -1,6 +1,6 @@
 /*
 
-Leetcode 1537 :-  Minimum Time to Complete Tasks(Medium)
+Leetcode 2187 :-  Minimum Time to Complete Tasks(Medium)
 Problem:
 Given an array where each element represents the time a worker takes to complete one task, and a target k representing the number of tasks to be completed, find the minimum time required to complete all tasks.
 
