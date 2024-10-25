@@ -1,0 +1,149 @@
+
+/*
+    Leetcode 1444:- Number of Ways of Cutting a Pizza(Hard)
+    
+    Understanding Problem Statement:-
+
+    The question wants us to tell total no. of possible ways in which we can cut the pizza vertically or horizontally.
+    It has 2 condition mentioned in the question itself how will we proceed if we cut horizontally or vertically.
+
+    Intution:-
+
+    Things could become easier
+    --For Horizontal cut
+    If we would have track of how many apples we would have in next partition and in current row if we divided horizontally.
+    --For Vertical cut
+    If we would have track of how many apples we would have in next column of partition and current column if we divided vertically.
+
+    So for this usage, we can make a matrix where we will store how many apples is stored from i to j.
+
+    What i to j represents?
+    i to j represent no. of apples from current row and column to end of matrix.
+    Basically apples[1][0] represents no. of apples from second row(0-based index) and 1 column to last row's last column(Basically end of matrix)
+
+    Why till last of matrix?
+    This is because the no. of apples never changes in last block. It always remain constant.
+
+    Approach:-
+
+    We will use this apples matrix for partitioning.
+    --Horizontal Cut
+    Let us say out co-ordinates are row, col.
+    If we want to divide horizontally, then our next row could be row+1, row+2, ..., lastRow and col would be same.
+
+    Condition for Partitioning:-
+    Current Row (Upper slice) should have more than or equal to 1 apple and next row(row+1, row+2, ..) should have more than or equal to (k-1) apples
+    lowerSlice spples = apples[i][col] --> i will be variable for iterating from row+1 to end of row
+    UpperSlice apples = apples[row][col] - lowerSlice
+
+    if(upperSlice >= 1 && lowerSlice >= k - 1) => proceed further
+
+    --Vertical Cut
+    Same as horizontal cut just difference is we will partinion from column.
+    Condition for Partitioning:-
+    Current col (Left slice) should have more than or equal to 1 apple and next Col(col+1, col+2, ..) should have more than or equal to (k-1) apples
+    RightSlice apples = apples[row][j] --> j is variable for iteration from col+1 to endCol
+    LeftSlice spples = apples[row][col] - RightSlice
+    if(LeftSlice >= 1 && RightSlice >= k - 1) => proceed further
+
+    Time Complexity :- 
+    O(n² * m) for filling the apples matrix.
+    O(n * m * k) for the recursive getSlices function.
+
+    Space Complexity:- O(row*col)
+    O(n * m) for the apples array.
+    O(n * m * k) for the dp array.
+*/
+
+class Solution {
+public:
+
+
+
+    int apples[52][52];
+    long long mod = 1e9 + 7;
+    int dp[52][52][11];
+
+    int getSlices(vector<string>& pizza, int row, int col, int k){
+
+        if(apples[row][col] < k){
+            return 0;
+        }
+
+        if(k == 1){
+
+            if(apples[row][col] >= 1){
+                return 1;
+            }
+
+            return 0;
+        }
+
+        if(dp[row][col][k] != -1){
+            return dp[row][col][k];
+        }
+
+        int ans = 0;
+
+        //For Horizontal Cut
+        for(int i = row+1; i < pizza.size(); i++){
+
+           int lowerSlices = apples[i][col];
+           int upperSlices = apples[row][col] - lowerSlices;
+
+            if(upperSlices >= 1 && lowerSlices >= (k - 1)){
+                ans = ((ans) % mod + getSlices(pizza, i, col, k-1)%mod)%mod;
+            }
+
+        }
+
+        //Vertical Cut
+
+        for(int j = col+1; j < pizza[0].size(); j++){
+
+            int rightSlices = apples[row][j];
+            int leftSlices  = apples[row][col] - rightSlices;
+
+            if(leftSlices >= 1 && rightSlices >= (k-1)){
+                ans = ((ans) % mod + getSlices(pizza, row, j, k-1)%mod)%mod;
+            }
+        }
+
+        return dp[row][col][k] = ans;
+
+    }
+
+    int ways(vector<string>& pizza, int k) {
+        
+        int n = pizza.size();
+        int m = pizza[0].size();
+
+        memset(apples, 0, sizeof(apples));
+        memset(dp, -1, sizeof(dp));
+
+        //Step 1:- Filling apples matrix
+
+        for(int i = n - 1; i >= 0; i--){
+            for(int j = m - 1; j >= 0; j--){
+
+                //Directly copy whatever is in front
+                apples[i][j] = apples[i][j+1];
+
+                //Check how many apples are present in current column by traversing every row
+                for(int l = i; l < n; l++){
+
+                    if(pizza[l][j] == 'A'){
+                        apples[i][j] += 1;
+                    }
+
+                }
+
+            }
+        }
+
+        //Step 2:- Solve how many cuts can be achieved
+
+        return getSlices(pizza, 0, 0, k);
+
+    }
+};
